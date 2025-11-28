@@ -49,6 +49,9 @@ def create_app() -> FastAPI:
             routes=fast_api.routes,
         )
 
+        if "components" not in openapi_schema:
+            openapi_schema["components"] = {}
+
         openapi_schema["components"]["securitySchemes"] = {
             "BearerAuth": {
                 "type": "http",

@@ -1,0 +1,66 @@
+lint.select = [
+  "F",
+  "E",
+  "W",
+  "C90",
+  "I",
+  "N",
+  "UP",
+  "ANN",
+  "ASYNC",
+  "S",
+  "BLE",
+  "B",
+  "A",
+  "COM",
+  "C4",
+  "DTZ",
+  "T10",
+  "EM",
+  "EXE",
+  "FA",
+  "ISC",
+  "ICN",
+  "LOG",
+  "G",
+  "INP",
+  "PIE",
+  "T20",
+  "PYI",
+  "PT",
+  "Q",
+  "RSE",
+  "RET",
+  "SLF",
+  "SLOT",
+  "SIM",
+  "TID",
+  "TCH",
+  "INT",
+  "ARG",
+  "PTH",
+  "TD",
+  "FIX",
+  "ERA",
+  "PGH",
+  "PL",
+  "TRY",
+  "FLY",
+  "FAST",
+  "PERF",
+  "DOC",
+  "RUF",
+]
+
+line-length = 88
+
+preview = true
+
+extend-exclude = ["**/test/**"]
+
+lint.per-file-ignores = {}
+
+target-version = "py313"
+
+[lint.mccabe]
+max-complexity = 10

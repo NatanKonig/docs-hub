@@ -14,7 +14,10 @@ class Settings:
 
     GOOGLE_CLIENT_ID: str = config("GOOGLE_CLIENT_ID", default="")
     GOOGLE_CLIENT_SECRET: str = config("GOOGLE_CLIENT_SECRET", default="")
-    GOOGLE_REDIRECT_URI: str = config("GOOGLE_REDIRECT_URI", default="http://localhost:8080/auth/google/callback")
+    GOOGLE_REDIRECT_URI: str = config(
+        "GOOGLE_REDIRECT_URI",
+        default="http://localhost:8080/auth/google/callback",
+    )
 
 
 @lru_cache

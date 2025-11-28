@@ -1,0 +1,21 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: docs-hub-backend
+    restart: unless-stopped
+    ports:
+      - "8099:8080"
+    volumes:
+      - ./backend:/code
+    environment:
+      - TZ=America/Sao_Paulo
+    networks:
+      - docs-hub-network
+    command: uv run uvicorn app.main:application --reload --host 0.0.0.0 --port 8099
+
+
+networks:
+  docs-hub-network:
+    driver: bridge

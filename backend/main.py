@@ -1,6 +1,3 @@
-def main() -> None:
-    pass
+from app.core.settings.fast_api import create_app
 
-
-if __name__ == "__main__":
-    main()
+application = create_app()

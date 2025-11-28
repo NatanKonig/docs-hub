@@ -9,6 +9,7 @@ dependencies = [
     "fastapi-pagination>=0.15.0",
     "pydantic>=2.12.5",
     "python-decouple>=3.8",
+    "uvicorn>=0.38.0",
 ]
 
 [dependency-groups]

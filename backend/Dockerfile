@@ -1,92 +1,72 @@
 # syntax=docker/dockerfile:1
 
-FROM python:3.13-alpine AS builder
+# ---- Base comum para todos os estágios ----
+FROM python:3.13-alpine AS base
 
-ENV TZ=America/Sao_Paulo
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
+ENV TZ=America/Sao_Paulo \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTEbackend=1 \
+    PYTHONPATH=/backend
 
-RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone
+WORKDIR /backend
 
-WORKDIR /code
+# ---- Builder: instala dependências ----
+FROM base AS builder
 
-RUN apk update && \
-    apk add --no-cache \
+ENV UV_COMPILE_BYTEbackend=1 \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT="/venv"
+
+RUN apk add --no-cache \
     musl-dev \
     libffi-dev \
     build-base \
-    libressl-dev \
-    tzdata \
-    curl && \
-    rm -rf /var/cache/apk/*
+    libressl-dev
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-COPY pyproject.toml uv.lock* /code/
+COPY pyproject.toml uv.lock* ./
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
 
-# ---- Estágio de Desenvolvimento ----
-FROM python:3.13-alpine AS development
+# ---- Desenvolvimento: com hot-reload ----
+FROM base AS development
 
-ENV TZ=America/Sao_Paulo
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONPATH=/code
+RUN apk add --no-cache \
+    libffi \
+    libressl
 
-RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone
+# Copia o ambiente virtual para /venv (fora de /backend para não ser sobrescrito pelo volume)
+COPY --from=builder /venv /venv
+ENV PATH="/venv/bin:$PATH"
 
-WORKDIR /code
-
-RUN apk update && \
-    apk add --no-cache \
-    musl-dev \
-    libffi-dev \
-    libressl-dev \
-    curl && \
-    rm -rf /var/cache/apk/*
-
-COPY --from=builder /code/.venv /code/.venv
-
-COPY . /code
+# Copia o código fonte (fallback se não houver volume)
+COPY . .
 
 EXPOSE 8080
 
-CMD ["uvicorn", "app.main:application", "--reload", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "main:application", "--reload", "--host", "0.0.0.0", "--port", "8080"]
 
-# ---- Estágio de Produção ----
-FROM python:3.13-alpine AS production
+# ---- Produção: otimizada e segura ----
+FROM base AS production
 
-ENV TZ=America/Sao_Paulo
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/code
-
-RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone
-
-WORKDIR /code
-
-RUN apk update && \
-    apk add --no-cache \
+RUN apk add --no-cache \
     libffi \
     libressl && \
-    rm -rf /var/cache/apk/*
+    addgroup -g 1000 app && \
+    adduser -D -u 1000 -G app app
 
-COPY --from=builder /code/.venv /code/.venv
+COPY --from=builder /venv /venv
+ENV PATH="/venv/bin:$PATH"
 
-COPY . /code
+COPY . .
 
-RUN addgroup -g 1000 app && \
-    adduser -D -u 1000 -G app app && \
-    chown -R app:app /code
+RUN chown -R app:app /backend && \
+    chown -R app:app /venv
 
 USER app
 
 EXPOSE 8080
 
-CMD ["uvicorn", "app.main:application", "--host", "0.0.0.0", "--port", "8080", "--workers", "4"]
+CMD ["uvicorn", "main:application", "--host", "0.0.0.0", "--port", "8080", "--workers", "4"]

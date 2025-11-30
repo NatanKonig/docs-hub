@@ -19,6 +19,12 @@ class Settings:
         default="http://localhost:8080/auth/google/callback",
     )
 
+    FIRESTORE_CREDENTIALS_PATH: str = config(
+        "FIRESTORE_CREDENTIALS_PATH",
+        default="",
+    )
+    FIRESTORE_PROJECT_ID: str = config("FIRESTORE_PROJECT_ID", default="")
+
 
 @lru_cache
 def get_settings() -> Settings:

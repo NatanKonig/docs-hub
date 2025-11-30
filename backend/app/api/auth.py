@@ -1,31 +1,22 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
-from app.schemas.auth import GoogleUserDataOutput
-from app.services.auth_service import AuthService
+from app.core.dependencies import AuthServiceDependency
+from app.schemas.auth import LoginSuccessOutput
 
 router = APIRouter()
 
 
-def get_auth_service() -> AuthService:
-    return AuthService()
-
-
-AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
-
-
 @router.get("/google/login")
 async def google_login(
-    service: AuthServiceDep,
+    auth_service: AuthServiceDependency,
 ) -> RedirectResponse:
-    return await service.get_google_login_redirect()
+    return await auth_service.get_google_login_redirect()
 
 
 @router.get("/google/callback")
 async def google_callback(
     request: Request,
-    service: AuthServiceDep,
-) -> GoogleUserDataOutput:
-    return await service.handle_google_callback(request)
+    auth_service: AuthServiceDependency,
+) -> LoginSuccessOutput:
+    return await auth_service.handle_google_callback(request)
